@@ -23,3 +23,8 @@ resource "aws_iam_instance_profile" "realm" {
     name = aws_iam_role.realm.name
     role = aws_iam_role.realm.name
 }
+
+
+resource "aws_iam_service_linked_role" "spot" {
+    aws_service_name = "spot.amazonaws.com"
+}
