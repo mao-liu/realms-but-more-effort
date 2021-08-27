@@ -14,7 +14,6 @@ help:	## # Show this help
 env-init:			## # Create conda environment
 	conda env create -f environment.yaml --force
 	conda activate ${CONDA_ENV}
-	npm install -g aws-cdk
 	$(MAKE) _auth_setup
 
 env-clean:			## # Remove conda environment
@@ -22,7 +21,6 @@ env-clean:			## # Remove conda environment
 
 env-update:			## # Update conda environment
 	conda activate ${CONDA_ENV}
-	npm install -g aws-cdk
 	conda env update --file environment.yaml --prune
 
 check-env:

@@ -4,7 +4,7 @@ terraform {
         organization = "mao-liu"
 
         workspaces {
-            name = "game-1"
+            name = "realms-game-au"
         }
     }
 

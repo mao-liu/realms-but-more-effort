@@ -2,7 +2,7 @@
 
 # set region
 aws configure --profile game-provisioning set region ap-southeast-2
-aws configure --profile game set region ap-southeast-2
+aws configure --profile game-1 set region ap-southeast-2
 
 
 # set access key for MFA sessions
