@@ -19,7 +19,7 @@ resource "aws_launch_template" "realm" {
     name = "realm"
     update_default_version = true
 
-    instance_type = "t2.micro"
+    instance_type = "t3.micro"
     image_id      = data.aws_ssm_parameter.ami_id.value
     ebs_optimized = true
 
@@ -48,6 +48,10 @@ resource "aws_launch_template" "realm" {
 
     tag_specifications {
         resource_type = "instance"
+        tags = local.tags
+    }
+    tag_specifications {
+        resource_type = "volume"
         tags = local.tags
     }
 }
