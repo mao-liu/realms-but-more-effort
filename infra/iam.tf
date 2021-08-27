@@ -18,3 +18,8 @@ resource "aws_iam_role" "realm" {
         "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
     ]
 }
+
+resource "aws_iam_instance_profile" "realm" {
+    name = aws_iam_role.realm.name
+    role = aws_iam_role.realm.name
+}

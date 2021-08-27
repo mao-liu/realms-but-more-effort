@@ -24,19 +24,19 @@ resource "aws_launch_template" "realm" {
     ebs_optimized = true
 
     iam_instance_profile {
-        name = aws_iam_role.realm.name
+        name = aws_iam_instance_profile.realm.name
     }
     vpc_security_group_ids = [
         aws_security_group.minecraft_ingress.id,
         aws_default_security_group.main.id
     ]
 
-    # block_device_mappings {
-    #     device_name = "/dev/sda1"
-    #     ebs {
-    #         volume_size = 8
-    #     }
-    # }
+    block_device_mappings {
+        device_name = "/dev/xvda"
+        ebs {
+            volume_size = 8
+        }
+    }
 
     # instance_market_options {
     #     market_type = "spot"
