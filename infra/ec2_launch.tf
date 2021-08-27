@@ -17,9 +17,11 @@ resource "aws_security_group" "minecraft_ingress" {
 
 resource "aws_launch_template" "realm" {
     name = "realm"
+    update_default_version = true
 
     instance_type = "t2.micro"
-    image_id = data.aws_ssm_parameter.ami_id.value
+    image_id      = data.aws_ssm_parameter.ami_id.value
+    ebs_optimized = true
 
     iam_instance_profile {
         name = aws_iam_role.realm.name
@@ -28,8 +30,6 @@ resource "aws_launch_template" "realm" {
         aws_security_group.minecraft_ingress.id,
         aws_default_security_group.main.id
     ]
-
-    ebs_optimized = true
 
     # block_device_mappings {
     #     device_name = "/dev/sda1"
