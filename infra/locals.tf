@@ -1,5 +1,5 @@
 locals {
     tags = {
-        "Usage" = "realms"
+        "Project" = "realms"
     }
 }
