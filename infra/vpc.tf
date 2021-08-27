@@ -4,9 +4,9 @@ resource "aws_vpc" "main" {
 
 resource "aws_subnet" "public" {
     for_each = {
-        "az1": "10.32.8.0/24",
-        "az2": "10.32.9.0/24",
-        "az3": "10.32.10.0/24"
+        "ap-southeast-2a": "10.32.8.0/24",
+        "ap-southeast-2b": "10.32.9.0/24",
+        "ap-southeast-2c": "10.32.10.0/24"
     }
 
     availability_zone = each.key
