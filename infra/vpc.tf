@@ -28,7 +28,7 @@ resource "aws_default_route_table" "main" {
     }
 }
 
-resource "aws_default_security_group" "default" {
+resource "aws_default_security_group" "main" {
     vpc_id = aws_vpc.main.id
 
     egress {
