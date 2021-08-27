@@ -1,5 +1,5 @@
 data "aws_ssm_parameter" "ami_id" {
-    name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs"
+    name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
 }
 
 resource "aws_security_group" "minecraft_ingress" {
@@ -29,12 +29,14 @@ resource "aws_launch_template" "realm" {
         aws_default_security_group.main.id
     ]
 
-    block_device_mappings {
-        device_name = "/dev/sda1"
-        ebs {
-            volume_size = 8
-        }
-    }
+    ebs_optimized = true
+
+    # block_device_mappings {
+    #     device_name = "/dev/sda1"
+    #     ebs {
+    #         volume_size = 8
+    #     }
+    # }
 
     # instance_market_options {
     #     market_type = "spot"
