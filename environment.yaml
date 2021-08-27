@@ -1,0 +1,9 @@
+name: realms
+dependencies:
+  - python==3.9
+  - nodejs>=10.3
+  - pip
+  - boto3
+  - pip:
+    - awscli
+    - aws-cdk.core
