@@ -35,27 +35,3 @@ auth:		## ENV=<env> # Get an MFA session with AWS
 _auth_setup:			## # setup AWS CLI configuration
 	conda activate ${CONDA_ENV}
 	bash scripts/aws_credential_init.sh
-
-# cdk-synth: check-env
-# 	conda activate ${CONDA_ENV}
-# 	export AWS_PROFILE=${ENV}
-# 	cdk synth
-
-ifndef STACK
-_STACK:="*"
-else
-_STACK:=${ENV}-${STACK}
-endif
-
-plan: check-env		## ENV=<env> # plan infra changes
-	conda activate ${CONDA_ENV}
-	export AWS_PROFILE=${ENV}
-	cdk diff ${_STACK}
-
-deploy: check-env	## ENV=<env> # Deploy infra changes
-	conda activate ${CONDA_ENV}
-	export AWS_PROFILE=${ENV}
-	cdk deploy ${_STACK}
-
-clear-cache: check-env
-	echo ""
