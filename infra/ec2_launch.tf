@@ -19,7 +19,7 @@ resource "aws_launch_template" "realm" {
     name = "realm"
     update_default_version = true
 
-    instance_type = "t3.micro"
+    instance_type = local.instance_type
     image_id      = data.aws_ssm_parameter.ami_id.value
     ebs_optimized = true
 
@@ -34,17 +34,19 @@ resource "aws_launch_template" "realm" {
     block_device_mappings {
         device_name = "/dev/xvda"
         ebs {
-            volume_size = 8
+            volume_size = 16
+            delete_on_termination = true
         }
     }
 
-    # instance_market_options {
-    #     market_type = "spot"
-    #     spot_options {
-    #         instance_interruption_behavior = "terminate"
-
-    #     }
-    # }
+    instance_market_options {
+        market_type = "spot"
+        spot_options {
+            instance_interruption_behavior = "terminate"
+            max_price = local.spot_price_maximum[local.instance_type]
+            spot_instance_type = "one-time"
+        }
+    }
 
     tag_specifications {
         resource_type = "instance"
