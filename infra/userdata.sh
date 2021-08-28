@@ -5,7 +5,7 @@ INSTALL_USER="ssm-user"
 
 GIT_REPO="git@github.com:mao-liu/realms-but-more-effort.git"
 GIT_DEPLOY_KEY_SSM_PATH="/realms/inputs/github_deploy_key"
-GIT_DEPLOY_KEY_LOCAL_PATH="${HOME}/.ssh/github_deploy_key"
+GIT_DEPLOY_KEY_LOCAL_PATH="/root/.ssh/github_deploy_key"
 GIT_BRANCH="feature/infra-core"
 
 AWS_REGION="ap-southeast-2"
