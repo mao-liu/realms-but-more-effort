@@ -46,6 +46,8 @@ data "aws_iam_policy_document" "realm" {
             "arn:aws:route53:::hostedzone/${data.aws_route53_zone.aws.zone_id}"
         ]
     }
+
+    # TODO: add ASG permissions
 }
 
 resource "aws_iam_role" "realm" {

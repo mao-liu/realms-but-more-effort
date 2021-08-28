@@ -8,7 +8,7 @@ SERVER_URL=https://launcher.mojang.com/v1/objects/a16d67e5807f57fc4e550299cf2022
 AWS_REGION=ap-southeast-2
 
 WORLD_S3_SSM_PATH=/realms/outputs/world_s3_path
-WORLD_S3_PATH=$(shell aws ssm get-parameter --name ${WOLRD_S3_SSM_PATH} --region ${AWS_REGION} | jq -r .Parameter.Value)
+WORLD_S3_PATH=$(shell aws ssm get-parameter --name ${WORLD_S3_SSM_PATH} --region ${AWS_REGION} | jq -r .Parameter.Value)
 
 install:
 	sudo yum install awscli -y
@@ -25,18 +25,27 @@ _install_minecraft:
 	curl ${SERVER_URL} -o server.jar
 	echo "eula=true" > eula.txt
 
-_download_minecraft:
+_download_world:
+	rm -rf *
 	aws s3 cp ${WORLD_S3_PATH} .
 	tar -xzvf server.tar.gz
 	git checkout -- .
 
-_upload_minecraft:
+_upload_world:
 	rm -f server.tar.gz
-	tar -czvf server.tar.gz *
+	tar -czvf server.tar.gz --exclude=screenlog.* --exclude=logs *
 	aws s3 cp server.tar.gz ${WORLD_S3_PATH}
 
 start:
+	$(MAKE) _download_world
+	screen -dmSL mcserver make _mcserver
+
+stop:
+	screen -S mcserver -p 0 -X stuff "stop^M"
+
+_mcserver:
 	java -Xmx1024M -Xms1024M -jar server.jar nogui
+	$(MAKE) _upload_world
 
 test:
 	A=`echo foo`
