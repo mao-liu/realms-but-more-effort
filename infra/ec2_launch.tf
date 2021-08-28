@@ -39,6 +39,8 @@ resource "aws_launch_template" "realm" {
         }
     }
 
+    user_data = filebase64("${path.module}/userdata.sh")
+
     instance_market_options {
         market_type = "spot"
         spot_options {
