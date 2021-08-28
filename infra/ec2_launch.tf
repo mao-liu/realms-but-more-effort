@@ -77,4 +77,12 @@ resource "aws_autoscaling_group" "realm" {
     health_check_type = "EC2"
 
     wait_for_capacity_timeout = "0"
+
+    lifecycle {
+        ignore_changes = [
+            min_size,
+            max_size
+        ]
+
+    }
 }
