@@ -1,53 +1,51 @@
 data "aws_route53_zone" "aws" {
-  name = "aws.ab-initio.me"
+    name = "aws.ab-initio.me"
 }
 
 data "aws_iam_policy_document" "ec2_trust" {
-  statement {
-    actions = ["sts:AssumeRole"]
+    statement {
+        actions = ["sts:AssumeRole"]
 
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
+        principals {
+            type        = "Service"
+            identifiers = ["ec2.amazonaws.com"]
+        }
     }
-  }
 }
 
 data "aws_iam_policy_document" "realm" {
-  statement {
-    sid = "SSM"
-    actions = ["ssm:GetParameter*"]
+    statement {
+        sid = "SSM"
+        actions = ["ssm:GetParameter*"]
 
-    resources = [
-      "arn:aws:ssm:${local.aws_region}:${local.aws_account}:parameter/realms/*"
-    ]
-  }
+        resources = [
+            "arn:aws:ssm:${local.aws_region}:${local.aws_account}:parameter/realms/*"
+        ]
+    }
 
-  statement {
-    sid = "S3"
-    actions = ["s3:*"]
+    statement {
+        sid = "S3"
+        actions = ["s3:*"]
 
-    resources = [
-      "${aws_s3_bucket.realms.arn}",
-      "${aws_s3_bucket.realms.arn}/*"
-    ]
-  }
+        resources = [
+            "${aws_s3_bucket.realms.arn}",
+            "${aws_s3_bucket.realms.arn}/*"
+        ]
+    }
 
-  statement {
-    sid = "KMSEverything"
-    actions = ["kms:*"]
-    resources = ["*"]
-  }
+    statement {
+        sid = "KMSEverything"
+        actions = ["kms:*"]
+        resources = ["*"]
+    }
 
-  statement {
-    sid = "Route53"
-    action = ["route53:*"]
-    resources = [
-      "arn:aws:route53:::hostedzone/${data.aws_route53_zone.aws.zone_id}"
-    ]
-
-  }
-
+    statement {
+        sid = "Route53"
+        actions = ["route53:*"]
+        resources = [
+            "arn:aws:route53:::hostedzone/${data.aws_route53_zone.aws.zone_id}"
+        ]
+    }
 }
 
 resource "aws_iam_role" "realm" {
@@ -58,6 +56,11 @@ resource "aws_iam_role" "realm" {
     managed_policy_arns = [
         "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
     ]
+
+    inline_policy {
+        name = "realms"
+        policy = data.aws_iam_policy_document.realm.json
+    }
 
 
 }
