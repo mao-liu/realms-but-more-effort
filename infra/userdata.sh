@@ -34,8 +34,8 @@ mkdir -p ${INSTALL_PATH} \
     && ssh-keyscan github.com >> ~/.ssh/known_hosts \
     && git clone ${GIT_REPO} . \
     && git checkout ${GIT_BRANCH} \
-    && chown -R ${INSTALL_USER}:${INSTALL_USER} .
+    && chown -R ${INSTALL_USER} .
 
 ## install stuff here
-# cd ${INSTALL_PATH}/server
-# su - ${INSTALL_USER} -c 'make install'
+cd ${INSTALL_PATH}/server
+su - ${INSTALL_USER} -c 'make install'
