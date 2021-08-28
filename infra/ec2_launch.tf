@@ -57,3 +57,24 @@ resource "aws_launch_template" "realm" {
         tags = local.tags
     }
 }
+
+resource "aws_autoscaling_group" "realm" {
+    name = "realm"
+    min_size = 0
+    max_size = 0
+
+    launch_template {
+        id      = aws_launch_template.realm.id
+        version = aws_launch_template.realm.latest_version
+    }
+
+    vpc_zone_identifier = [
+        aws_subnet.public["ap-southeast-2a"].id,
+        aws_subnet.public["ap-southeast-2b"].id,
+        aws_subnet.public["ap-southeast-2c"].id
+    ]
+
+    health_check_type = "EC2"
+
+    wait_for_capacity_timeout = "0"
+}
