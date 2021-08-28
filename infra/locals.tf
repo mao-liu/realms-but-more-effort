@@ -12,4 +12,7 @@ locals {
 
     instance_type = "t3a.small"
     instance_az   = "ap-southeast-2c"  # most stable for t3a.* instances
+
+    aws_region    = "ap-southeast-2"
+    aws_account   = data.aws_caller_identity.current.account_id
 }
