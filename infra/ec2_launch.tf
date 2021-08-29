@@ -16,7 +16,7 @@ resource "aws_security_group" "minecraft_ingress" {
 }
 
 resource "aws_launch_template" "realm" {
-    name = "realm"
+    name = "realms"
     update_default_version = true
 
     instance_type = local.instance_type
@@ -61,7 +61,7 @@ resource "aws_launch_template" "realm" {
 }
 
 resource "aws_autoscaling_group" "realm" {
-    name = "realm"
+    name = "realms"
     min_size = 0
     max_size = 0
 
