@@ -7,8 +7,15 @@ SHELL=/bin/bash
 SERVER_URL=https://launcher.mojang.com/v1/objects/a16d67e5807f57fc4e550299cf20226194497dc2/server.jar
 AWS_REGION=ap-southeast-2
 
-WORLD_S3_SSM_PATH=/realms/outputs/world_s3_path
-WORLD_S3_PATH=$(shell aws ssm get-parameter --name ${WORLD_S3_SSM_PATH} --region ${AWS_REGION} | jq -r .Parameter.Value)
+
+WORLD_S3_PATH=$(shell aws ssm get-parameter --name /realms/outputs/world_s3_path --region ${AWS_REGION} | jq -r .Parameter.Value)
+R53_ZONE_ID=$(shell aws ssm get-parameter --name /realms/outputs/route53_zone_id --region ${AWS_REGION} | jq -r .Parameter.Value)
+SERVER_HOSTNAME=$(shell aws ssm get-parameter --name /realms/outputs/server_hostname --region ${AWS_REGION} | jq -r .Parameter.Value)
+ASG_NAME=$(shell aws ssm get-parameter --name /realms/outputs/server_asg_name --region ${AWS_REGION} | jq -r .Parameter.Value)
+
+PUBLIC_IP=$(shell ec2-metadata --public-ipv4 | awk '{print $$2}')
+
+TEST_VAR=$(shell pwd)
 
 install:
 	sudo yum install awscli -y
@@ -36,18 +43,37 @@ _upload_world:
 	tar -czvf server.tar.gz --exclude=screenlog.* --exclude=logs *
 	aws s3 cp server.tar.gz ${WORLD_S3_PATH}
 
+_register_dns:
+	cat <<- EOF > _r53.json
+	{"Changes": [{
+		"Action": "UPSERT",
+		"ResourceRecordSet": {
+			"Name": "${SERVER_HOSTNAME}",
+			"Type": "A",
+			"TTL": 60,
+			"ResourceRecords": [{"Value": "${PUBLIC_IP}"}]
+		}
+	}]}
+	EOF
+	aws route53 change-resource-record-sets \
+		--hosted-zone-id ${R53_ZONE_ID} \
+		--change-batch file://_r53.json
+
 start:
 	$(MAKE) _download_world
 	screen -dmSL mcserver make _mcserver
+	$(MAKE) _register_dns
 
 stop:
 	screen -S mcserver -p 0 -X stuff "stop^M"
 
+save:
+	screen -S mcserver -p 0 -X stuff "save-all^M"
+	sleep 120
+	$(MAKE) _upload_world
+
 _mcserver:
 	java -Xmx1024M -Xms1024M -jar server.jar nogui
 	$(MAKE) _upload_world
-
-test:
-	A=`echo foo`
-	echo $${A}
+# TODO: turn off the ASG
 

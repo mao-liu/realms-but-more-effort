@@ -48,5 +48,6 @@ done
 
 ## install stuff here
 cd ${INSTALL_PATH}/server \
-    && chown -R ${INSTALL_USER} . \
-    && su - ${INSTALL_USER} -c 'make install'
+    && chown -R ${INSTALL_USER} .. \
+    && sudo -u ${INSTALL_USER} make install \
+    && sudo -u ${INSTALL_USER} make start

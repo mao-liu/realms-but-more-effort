@@ -3,6 +3,7 @@ locals {
         "Project" = "realms"
     }
 
+    # spot prices retrieved from EC2 console, 2021-08
     spot_price_maximum = {
         "t3a.small":  0.008,    # on demand 0.0238
         "t3a.medium": 0.015,    # on demand 0.0475
@@ -11,7 +12,8 @@ locals {
     }
 
     instance_type = "t3a.small"
-    instance_az   = "ap-southeast-2c"  # most stable for t3a.* instances
+
+    r53_domain    = "aws.ab-initio.me"
 
     aws_region    = "ap-southeast-2"
     aws_account   = data.aws_caller_identity.current.account_id

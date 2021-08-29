@@ -1,5 +1,5 @@
 data "aws_route53_zone" "aws" {
-    name = "aws.ab-initio.me"
+    name = local.r53_domain
 }
 
 data "aws_iam_policy_document" "ec2_trust" {
@@ -45,6 +45,10 @@ data "aws_iam_policy_document" "realm" {
         resources = [
             "arn:aws:route53:::hostedzone/${data.aws_route53_zone.aws.zone_id}"
         ]
+    }
+
+    statement {
+        sid = "ASG"
     }
 
     # TODO: add ASG permissions
