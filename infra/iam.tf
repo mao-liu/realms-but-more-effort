@@ -49,9 +49,15 @@ data "aws_iam_policy_document" "realm" {
 
     statement {
         sid = "ASG"
-    }
+        actions = ["autoscaling:*"]
+        resources = ["*"]
+        condition {
+            test     = "StringEquals"
+            variable = "aws:ResourceTag/Project"
+            values   = local.tags["Project"]
+        }
 
-    # TODO: add ASG permissions
+    }
 }
 
 resource "aws_iam_role" "realm" {
