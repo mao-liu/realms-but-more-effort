@@ -80,3 +80,8 @@ save:
 _mcserver:
 	java -Xmx1024M -Xms1024M -jar server.jar nogui
 	$(MAKE) _upload_world
+	aws autoscaling update-auto-scaling-group \
+		--auto-scaling-group-name ${ASG_NAME} \
+		--max-size 0 \
+		--min-size 0 \
+		--desired-capacity 0
