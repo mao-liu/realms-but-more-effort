@@ -33,9 +33,20 @@ mkdir -p ${INSTALL_PATH} \
     && cd ${INSTALL_PATH} \
     && ssh-keyscan github.com >> ~/.ssh/known_hosts \
     && git clone ${GIT_REPO} . \
-    && git checkout ${GIT_BRANCH} \
-    && chown -R ${INSTALL_USER} .
+    && git checkout ${GIT_BRANCH}
+
+# let's wait a few minutes until ssm-user is created
+COUNTER=0
+until id -u ${INSTALL_USER}; do
+    if [ $COUNTER -ge 12 ]; then
+        echo "TIMEOUT EXCEEDED while waiting for ${INSTALL_USER}"
+        break
+    fi
+    COUNTER=$((COUNTER+1))
+    sleep 10
+done
 
 ## install stuff here
 cd ${INSTALL_PATH}/server \
+    && chown -R ${INSTALL_USER} . \
     && su - ${INSTALL_USER} -c 'make install'
