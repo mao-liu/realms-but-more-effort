@@ -59,10 +59,16 @@ _register_dns:
 		--hosted-zone-id ${R53_ZONE_ID} \
 		--change-batch file://_r53.json
 
+_start_autosave:
+	crontab -l \
+		| { cat; echo '*/10 * * * * bash -c "cd /var/realms/server && make save"'; } \
+		| crontab -
+
 start:
 	$(MAKE) _download_world
 	screen -dmSL mcserver make _mcserver
 	$(MAKE) _register_dns
+	$(MAKE) _start_autosave
 
 stop:
 	screen -S mcserver -p 0 -X stuff "stop^M"
@@ -74,8 +80,3 @@ save:
 _mcserver:
 	java -Xmx1024M -Xms1024M -jar server.jar nogui
 	$(MAKE) _upload_world
-	aws autoscaling update-auto-scaling-group \
-		--auto-scaling-group-name ${ASG_NAME} \
-		--max-size 0 \
-		--min-size 0 \
-		--desired-capacity 0
