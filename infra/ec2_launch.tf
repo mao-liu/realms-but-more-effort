@@ -80,6 +80,12 @@ resource "aws_autoscaling_group" "realm" {
 
     wait_for_capacity_timeout = "0"
 
+    tag {
+        key   = "Project"
+        value = local.tags["Project"]
+        propagate_at_launch = true
+    }
+
     lifecycle {
         ignore_changes = [
             min_size,
