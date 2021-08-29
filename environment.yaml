@@ -1,0 +1,7 @@
+name: realms
+dependencies:
+  - python==3.9
+  - pip
+  - boto3
+  - pip:
+    - awscli
