@@ -38,7 +38,7 @@ mkdir -p ${INSTALL_PATH} \
 # let's wait a few minutes until ssm-user is created
 COUNTER=0
 until id -u ${INSTALL_USER}; do
-    if [ $COUNTER -ge 12 ]; then
+    if [ $COUNTER -ge 60 ]; then
         echo "TIMEOUT EXCEEDED while waiting for ${INSTALL_USER}"
         break
     fi

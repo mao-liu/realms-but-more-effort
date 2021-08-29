@@ -56,7 +56,6 @@ data "aws_iam_policy_document" "realm" {
             variable = "aws:ResourceTag/Project"
             values   = [local.tags["Project"]]
         }
-
     }
 }
 

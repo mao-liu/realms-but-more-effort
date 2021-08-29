@@ -79,4 +79,3 @@ _mcserver:
 		--max-size 0 \
 		--min-size 0 \
 		--desired-capacity 0
-
