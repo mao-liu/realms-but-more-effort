@@ -53,8 +53,8 @@ data "archive_file" "gaia" {
             api_key = _get_ssm(os.environ['SSM_API_KEY'])
 
             assert 'headers' in event, 'event does not have headers'
-            assert 'x-api-key' in event['headers'], 'headers does not have x-api-key'
-            assert event['headers']['x-api-key'] == f'Bearer {api_key}', 'x-api-key key does not match'
+            assert 'Authorization' in event['headers'], 'headers does not have Authorization'
+            assert event['headers']['Authorization'] == f'Bearer {api_key}', 'Authorization does not match api key'
 
         def _unauthorized():
             response = {
