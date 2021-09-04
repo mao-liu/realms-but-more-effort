@@ -16,13 +16,14 @@ resource "aws_apigatewayv2_api_mapping" "realms" {
     api_mapping_key = "realms"
 }
 
-resource "aws_apigatewayv2_route" "realms-get-info" {
+resource "aws_apigatewayv2_route" "realms" {
     for_each = toset([
         "GET /realms/info",
-        "GET /realms/debug"
+        "GET /realms/debug",
+        "POST /realms/start"
     ])
     api_id = aws_apigatewayv2_api.realms.id
-    route_key = "GET /realms/info"
+    route_key = each.key
 
     target = "integrations/${aws_apigatewayv2_integration.gaia.id}"
 }
