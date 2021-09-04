@@ -18,9 +18,9 @@ resource "aws_apigatewayv2_api_mapping" "realms" {
 
 resource "aws_apigatewayv2_route" "realms" {
     for_each = toset([
-        "GET /realms/info",
-        "GET /realms/debug",
-        "POST /realms/start"
+        "GET /info",
+        "GET /debug",
+        "POST /start"
     ])
     api_id = aws_apigatewayv2_api.realms.id
     route_key = each.key
