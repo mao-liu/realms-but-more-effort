@@ -31,13 +31,19 @@ data "archive_file" "gaia" {
     import boto3
     import os
     import json
+    import time
+    import logging
 
     ASG = boto3.client('autoscaling')
     SSM = boto3.client('ssm')
 
+    logging.basicConfig(level=logging.INFO)
+
     def _get_asg_name():
         ssm_path = os.environ['SSM_ASG_NAME'].replace('ssm:/', '')
+        logging.info(f'SSM get_parameter {ssm_path}')
         response = SSM.get_parameter(Name=ssm_path, WithDecryption=True)
+        logging.info(response)
         return response['Parameter']['Value']
 
     def _apigw_response(data: dict):
@@ -47,21 +53,30 @@ data "archive_file" "gaia" {
             "headers": {"Content-Type": "application/json"},
             "body": json.dumps(data, default=str)
         }
-
-        print(response)
+        logging.info('response')
+        logging.info(response)
         return response
 
     def get_status(debug=False):
         asg_name = _get_asg_name()
+
+        logging.info(f'ASG describe_auto_scaling_groups {asg_name}')
         asg_info = ASG.describe_auto_scaling_groups(
             AutoScalingGroupNames=[asg_name]
         )
-        asg_info = asg_info['AutoScalingGroups'][0]
+        logging.info(asg_info)
 
-        if len(asg_info['Instances']) == 0:
+        n_instances = len(asg_info['AutoScalingGroups'][0]['Instances'])
+        n_desired = asg_info['AutoScalingGroups'][0]['DesiredCapacity']
+
+        if n_instances == 0 and n_desired == 0:
             status = "stopped"
-        elif len(asg_info['Instances']) == 1:
+        elif n_instances == 1 and n_desired == 0:
+            status = "stopping"
+        elif n_instances == 1 and n_desired == 1:
             status = "running"
+        elif n_instances == 0 and n_desired == 1:
+            status = "pending"
         else:
             status = "error"
 
@@ -71,14 +86,36 @@ data "archive_file" "gaia" {
         debug = {
             "asg_info": asg_info
         }
-        if debug:
+        if debug or status == "error":
             response['debug'] = debug
         return response
 
+    def start_realms():
+        asg_name = _get_asg_name()
+
+        logging.info(f'ASG update_auto_scaling_group {asg_name}')
+        response = ASG.update_auto_scaling_group(
+            AutoScalingGroupName=asg_name,
+            MinSize=1,
+            MaxSize=1,
+            DesiredCapacity=1
+        )
+        logging.info(response)
+
+        return response
 
     def lambda_handler(event, contest):
+        handlers = {
+            "GET /realms/info": lambda: get_status(),
+            "GET /realms/debug": lambda: get_status(debug=True),
+            "POST /realms/start": lambda: start_realms()
+        }
 
-        response = get_status()
+        op = f'{event["httpMethod"]} {event["path"}'
+        logging.info('Handling {op}')
+
+        response = handlers[op]()
+
         return _apigw_response(response)
     PYTHON
   }
