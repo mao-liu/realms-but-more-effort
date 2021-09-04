@@ -1,14 +1,26 @@
-locals {
-}
-
-
 resource "aws_apigatewayv2_api" "realms" {
     name = "realms-api"
     protocol_type = "HTTP"
 }
 
+resource "aws_apigatewayv2_stage" "realms" {
+    api_id      = aws_apigatewayv2_api.realms.id
+    name        = "realms"
+    auto_deploy = true
+}
+
+resource "aws_apigatewayv2_api_mapping" "realms" {
+    api_id      = aws_apigatewayv2_api.realms.id
+    domain_name = aws_apigatewayv2_domain_name.api-realms.id
+    stage       = aws_apigatewayv2_stage.realms.id
+    api_mapping_key = "realms"
+}
 
 resource "aws_apigatewayv2_route" "realms-get-info" {
+    for_each = toset([
+        "GET /realms/info",
+        "GET /realms/debug"
+    ])
     api_id = aws_apigatewayv2_api.realms.id
     route_key = "GET /realms/info"
 
