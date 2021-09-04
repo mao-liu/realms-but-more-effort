@@ -33,7 +33,7 @@ data "archive_file" "gaia" {
     import json
 
     ASG = boto3.client('autoscaling')
-    SSM = boto3.client('ssm)
+    SSM = boto3.client('ssm')
 
     def _get_asg_name():
         ssm_path = os.environ['SSM_ASG_NAME'].replace('ssm:/', '')
@@ -45,19 +45,41 @@ data "archive_file" "gaia" {
             "isBase64Encoded": False,
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps(data)
+            "body": json.dumps(data, default=str)
         }
+
+        print(response)
         return response
 
-    def lambda_handler(event, contest):
+    def get_status(debug=False):
         asg_name = _get_asg_name()
         asg_info = ASG.describe_auto_scaling_groups(
             AutoScalingGroupNames=[asg_name]
         )
         asg_info = asg_info['AutoScalingGroups'][0]
-        print(json.dumps(asg_info))
-        return _apigw_response(asg_info)
 
+        if len(asg_info['Instances']) == 0:
+            status = "stopped"
+        elif len(asg_info['Instances']) == 1:
+            status = "running"
+        else:
+            status = "error"
+
+        response = {
+            "status": status
+        }
+        debug = {
+            "asg_info": asg_info
+        }
+        if debug:
+            response['debug'] = debug
+        return response
+
+
+    def lambda_handler(event, contest):
+
+        response = get_status()
+        return _apigw_response(response)
     PYTHON
   }
 }
