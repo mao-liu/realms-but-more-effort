@@ -14,6 +14,7 @@ locals {
     instance_type = "t3a.small"
 
     r53_domain    = "aws.ab-initio.me"
+    realms_api_domain_name = "api.realms.${local.r53_domain}"
 
     aws_region    = "ap-southeast-2"
     aws_account   = data.aws_caller_identity.current.account_id

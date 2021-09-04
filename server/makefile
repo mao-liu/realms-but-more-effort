@@ -20,6 +20,7 @@ TEST_VAR=$(shell pwd)
 install:
 	sudo yum install awscli -y
 	aws configure set default.region ${AWS_REGION}
+	$(MAKE) _register_dns
 	$(MAKE) _install_java
 #	$(MAKE) _install_minecraft
 
@@ -67,7 +68,6 @@ _start_autosave:
 start:
 	$(MAKE) _download_world
 	screen -dmSL mcserver make _mcserver
-	$(MAKE) _register_dns
 	$(MAKE) _start_autosave
 
 stop:

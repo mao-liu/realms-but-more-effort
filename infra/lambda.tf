@@ -104,7 +104,10 @@ data "archive_file" "gaia" {
 
         return response
 
-    def lambda_handler(event, contest):
+    def lambda_handler(event, context):
+        logging.info('event')
+        logging.info(event)
+
         handlers = {
             "GET /realms/info": lambda: get_status(),
             "GET /realms/debug": lambda: get_status(debug=True),
