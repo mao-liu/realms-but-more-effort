@@ -54,7 +54,7 @@ data "archive_file" "gaia" {
 
             assert 'headers' in event, 'event does not have headers'
             assert 'x-api-key' in event['headers'], 'headers does not have x-api-key'
-            assert event['headers']['x-api-key'] = f'Bearer {api_key}', 'x-api-key key does not match'
+            assert event['headers']['x-api-key'] == f'Bearer {api_key}', 'x-api-key key does not match'
 
         def _unauthorized():
             response = {
