@@ -13,7 +13,7 @@ resource "aws_acm_certificate" "api-realms" {
 
 resource "aws_route53_record" "api-realms-cert" {
   for_each = {
-    for dvo in aws_acm_certificate.example.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.api-realms.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -30,7 +30,7 @@ resource "aws_route53_record" "api-realms-cert" {
 
 resource "aws_acm_certificate_validation" "api-realms" {
   certificate_arn         = aws_acm_certificate.api-realms.arn
-  validation_record_fqdns = [for record in aws_route53_record.example : record.fqdn]
+  validation_record_fqdns = [for record in aws_route53_record.api-realms-cert : record.fqdn]
 }
 
 resource "aws_apigatewayv2_domain_name" "api-realms" {
