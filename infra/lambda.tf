@@ -83,11 +83,11 @@ data "archive_file" "gaia" {
         response = {
             "status": status
         }
-        debug = {
+        debug_response = {
             "asg_info": asg_info
         }
         if debug or status == "error":
-            response['debug'] = debug
+            response['debug'] = debug_response
         return response
 
     def start_realms():
@@ -111,7 +111,7 @@ data "archive_file" "gaia" {
             "POST /realms/start": lambda: start_realms()
         }
 
-        op = f'{event["httpMethod"]} {event["path"}'
+        op = f'{event["httpMethod"]} {event["path"]}'
         logging.info('Handling {op}')
 
         response = handlers[op]()
