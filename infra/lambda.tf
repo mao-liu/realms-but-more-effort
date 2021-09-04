@@ -15,6 +15,7 @@ resource "aws_lambda_function" "gaia" {
     environment {
         variables = {
             SSM_ASG_NAME = "ssm://realms/outputs/server_asg_name"
+            SSM_API_KEY  = "ssm://realms/outputs/api_key"
         }
     }
 
@@ -39,12 +40,29 @@ data "archive_file" "gaia" {
 
         logging.basicConfig(level=logging.INFO)
 
-        def _get_asg_name():
-            ssm_path = os.environ['SSM_ASG_NAME'].replace('ssm:/', '')
+        def _get_ssm(ssm_path):
+            ssm_path = ssm_path.replace('ssm:/', '')
             logging.info(f'SSM get_parameter {ssm_path}')
             response = SSM.get_parameter(Name=ssm_path, WithDecryption=True)
-            logging.info(response)
             return response['Parameter']['Value']
+
+        def _get_asg_name():
+            return _get_ssm(os.environ['SSM_ASG_NAME'])
+
+        def _auth(event):
+            api_key = _get_ssm(os.environ['SSM_API_KEY'])
+
+            assert 'headers' in event, 'event does not have headers'
+            assert 'x-api-key' in event['headers'], 'headers does not have x-api-key'
+            assert event['headers']['x-api-key'] = f'Bearer {api_key}', 'x-api-key key does not match'
+
+        def _unauthorized():
+            response = {
+                "statusCode": 401,
+                "body": "401 Unauthorized"
+            }
+            logging.info(response)
+            return response
 
         def _apigw_response(data: dict):
             response = {
@@ -110,6 +128,12 @@ data "archive_file" "gaia" {
             return response
 
         def lambda_handler(event, context):
+            try:
+                _auth(event)
+            except AssertionError as ex:
+                logging.error(f'Unauthorized: {ex}')
+                return _unauthorized()
+
             logging.info('event')
             logging.info(event)
 

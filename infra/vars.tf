@@ -1,3 +1,8 @@
+variable "api_key" {
+    type        = string
+    description = "API key used for interacting with api.realms.aws.ab-initio.me"
+}
+
 locals {
     tags = {
         "Project" = "realms"
