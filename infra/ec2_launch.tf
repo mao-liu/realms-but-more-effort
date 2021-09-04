@@ -39,6 +39,10 @@ resource "aws_launch_template" "realm" {
         }
     }
 
+    credit_specification {
+        cpu_credits = "standard"
+    }
+
     user_data = filebase64("${path.module}/userdata.sh")
 
     instance_market_options {
