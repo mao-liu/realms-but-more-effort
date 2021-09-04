@@ -90,15 +90,20 @@ data "archive_file" "gaia" {
                 response['debug'] = debug_response
             return response
 
-        def start_realms():
+        def update_asg(mode):
+            modes = {
+                'start': 1,
+                'stop': 0
+            }
             asg_name = _get_asg_name()
+            n = modes[mode]
 
             logging.info(f'ASG update_auto_scaling_group {asg_name}')
             response = ASG.update_auto_scaling_group(
                 AutoScalingGroupName=asg_name,
-                MinSize=1,
-                MaxSize=1,
-                DesiredCapacity=1
+                MinSize=n,
+                MaxSize=n,
+                DesiredCapacity=n
             )
             logging.info(response)
 
@@ -111,7 +116,8 @@ data "archive_file" "gaia" {
             handlers = {
                 "GET /realms/info": lambda: get_status(),
                 "GET /realms/debug": lambda: get_status(debug=True),
-                "POST /realms/start": lambda: start_realms()
+                "POST /realms/start": lambda: update_asg(mode="start"),
+                "POST /realms/stop": lambda: update_asg(mode="stop")
             }
 
             op = f'{event["httpMethod"]} {event["path"]}'
