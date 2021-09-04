@@ -1,7 +1,3 @@
-data "aws_route53_zone" "aws" {
-    name = local.r53_domain
-}
-
 data "aws_iam_policy_document" "ec2_trust" {
     statement {
         actions = ["sts:AssumeRole"]
