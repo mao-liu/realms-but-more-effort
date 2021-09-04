@@ -1,7 +1,3 @@
-data "aws_route53_zone" "aws" {
-    name = local.r53_domain
-}
-
 data "aws_iam_policy_document" "ec2_trust" {
     statement {
         actions = ["sts:AssumeRole"]
@@ -9,6 +5,14 @@ data "aws_iam_policy_document" "ec2_trust" {
         principals {
             type        = "Service"
             identifiers = ["ec2.amazonaws.com"]
+        }
+    }
+    statement {
+        actions = ["sts:AssumeRole"]
+
+        principals {
+            type        = "Service"
+            identifiers = ["lambda.amazonaws.com"]
         }
     }
 }
@@ -35,7 +39,13 @@ data "aws_iam_policy_document" "realm" {
 
     statement {
         sid = "KMSEverything"
-        actions = ["kms:*"]
+        actions = [
+            "kms:Encrypt",
+            "kms:Decrypt",
+            "kms:ReEncrypt*",
+            "kms:GenerateDataKey*",
+            "kms:DescribeKey"
+        ]
         resources = ["*"]
     }
 
@@ -48,7 +58,7 @@ data "aws_iam_policy_document" "realm" {
     }
 
     statement {
-        sid = "ASG"
+        sid = "ASGModify"
         actions = ["autoscaling:*"]
         resources = ["*"]
         condition {
@@ -56,6 +66,16 @@ data "aws_iam_policy_document" "realm" {
             variable = "aws:ResourceTag/Project"
             values   = [local.tags["Project"]]
         }
+    }
+
+    statement {
+        sid = "ASGRead"
+        actions = [
+            "autoscaling:Describe*",
+            "ec2:Describe*",
+            "ec2:Get*"
+        ]
+        resources = ["*"]
     }
 }
 
@@ -65,7 +85,8 @@ resource "aws_iam_role" "realm" {
     assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
 
     managed_policy_arns = [
-        "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+        "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
     ]
 
     inline_policy {

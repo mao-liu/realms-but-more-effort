@@ -21,3 +21,9 @@ resource "aws_ssm_parameter" "asg_name" {
     type  = "String"
     value = aws_autoscaling_group.realm.name
 }
+
+resource "aws_ssm_parameter" "api_key" {
+    name  = "/realms/outputs/api_key"
+    type  = "SecureString"
+    value = "${var.api_key}"
+}
