@@ -11,6 +11,14 @@ data "aws_iam_policy_document" "ec2_trust" {
             identifiers = ["ec2.amazonaws.com"]
         }
     }
+    statement {
+        actions = ["sts:AssumeRole"]
+
+        principals {
+            type        = "Service"
+            identifiers = ["lambda.amazonaws.com"]
+        }
+    }
 }
 
 data "aws_iam_policy_document" "realm" {
@@ -35,7 +43,13 @@ data "aws_iam_policy_document" "realm" {
 
     statement {
         sid = "KMSEverything"
-        actions = ["kms:*"]
+        actions = [
+            "kms:Encrypt",
+            "kms:Decrypt",
+            "kms:ReEncrypt*",
+            "kms:GenerateDataKey*",
+            "kms:DescribeKey"
+        ]
         resources = ["*"]
     }
 
@@ -48,7 +62,7 @@ data "aws_iam_policy_document" "realm" {
     }
 
     statement {
-        sid = "ASG"
+        sid = "ASGModify"
         actions = ["autoscaling:*"]
         resources = ["*"]
         condition {
@@ -56,6 +70,16 @@ data "aws_iam_policy_document" "realm" {
             variable = "aws:ResourceTag/Project"
             values   = [local.tags["Project"]]
         }
+    }
+
+    statement {
+        sid = "ASGRead"
+        actions = [
+            "autoscaling:Describe*",
+            "ec2:Describe*",
+            "ec2:Get*"
+        ]
+        resources = ["*"]
     }
 }
 

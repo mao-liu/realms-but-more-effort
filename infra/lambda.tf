@@ -14,6 +14,7 @@ resource "aws_lambda_function" "gaia" {
 
   environment {
     variables = {
+        SSM_ASG_NAME = "ssm://realms/outputs/server_asg_name"
     }
   }
 
@@ -26,49 +27,44 @@ data "archive_file" "gaia" {
   source {
     filename = "app.py"
     content  = <<-PYTHON
-    """Very minimalistic function that passes SQS messages to SNS"""
+    """Very minimalistic function queries and modifies ASG"""
     import boto3
     import os
+    import json
 
-    SNS = boto3.client('sns')
-    TOPIC_NAME = os.environ['ERROR_SNS_TOPIC_ARN']
+    ASG = boto3.client('autoscaling')
+    SSM = boto3.client('ssm)
+
+    def _get_asg_name():
+        ssm_path = os.environ['SSM_ASG_NAME'].replace('ssm:/', '')
+        response = SSM.get_parameter(Name=ssm_path, WithDecryption=True)
+        return response['Parameter']['Value']
+
+    def _apigw_response(data: dict):
+        response = {
+            "isBase64Encoded": False,
+            "statusCode": 200,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps(data)
+        }
+        return response
 
     def lambda_handler(event, contest):
-        # handles SQS events, event schema is here:
-        # https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html
+        asg_name = _get_asg_name()
+        asg_info = ASG.describe_auto_scaling_groups(
+            AutoScalingGroupNames=[asg_name]
+        )
+        asg_info = asg_info['AutoScalingGroups'][0]
+        print(json.dumps(asg_info))
+        return _apigw_response(asg_info)
 
-        for record in event['Records']:
-            # pass the body through to SNS without modification
-            body = record['body']
-
-            # add the eventSourceARN to the message attributes
-            msg_attributes = {
-              key: fix_sqs_msg_attribute(value)
-              for key, value in record['messageAttributes'].items()
-            }
-            msg_attributes['eventSourceArn'] = {
-                'DataType': 'String',
-                'StringValue': record['eventSourceARN']
-            }
-
-            SNS.publish(TargetArn=TOPIC_NAME, Message=body, MessageAttributes=msg_attributes)
-
-    def fix_sqs_msg_attribute(inp):
-        # the sqs input message attributes is not fully compatible with sns message attributes
-        # - turn camelCase to CamelCase for dict keys
-        # - dont include any keys that arent supported by sns (stringListValues, binaryListValues)
-        _key_mapping = {
-          'dataType': 'DataType',
-          'stringValue': 'StringValue',
-          'binaryValue': 'BinaryValue'
-        }
-        return {
-            _key_mapping[k]: v
-            for k, v in inp.items()
-            if k in _key_mapping
-        }
     PYTHON
   }
+}
+
+resource "aws_cloudwatch_log_group" "gaia" {
+  name              = "/aws/lambda/${local.gaia_name}"
+  retention_in_days = 30
 }
 
 resource "null_resource" "gaia_archiver_cleanup" {
