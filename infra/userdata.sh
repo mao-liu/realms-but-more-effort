@@ -1,7 +1,7 @@
 #!/bin/bash
 
 INSTALL_PATH="/var/realms"
-INSTALL_USER="ssm-user"
+INSTALL_USER="ec2-user"
 
 GIT_REPO="git@github.com:mao-liu/realms-but-more-effort.git"
 GIT_DEPLOY_KEY_SSM_PATH="/realms/inputs/github_deploy_key"
@@ -35,7 +35,7 @@ mkdir -p ${INSTALL_PATH} \
     && git clone ${GIT_REPO} . \
     && git checkout ${GIT_BRANCH}
 
-# let's wait a few minutes until ssm-user is created
+# let's wait a few minutes until ec2-user is created
 COUNTER=0
 until id -u ${INSTALL_USER}; do
     if [ $COUNTER -ge 60 ]; then
