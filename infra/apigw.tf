@@ -12,7 +12,7 @@ resource "aws_apigatewayv2_route" "realms-get-info" {
     api_id = aws_apigatewayv2_api.realms.id
     route_key = "GET /realms/info"
 
-    target = "integrations/${aws_api_gatewayv2_integration.gaia.id}"
+    target = "integrations/${aws_apigatewayv2_integration.gaia.id}"
 }
 
 resource "aws_apigatewayv2_integration" "gaia" {
