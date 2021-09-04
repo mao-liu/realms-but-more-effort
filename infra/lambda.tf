@@ -38,11 +38,12 @@ data "archive_file" "gaia" {
         ASG = boto3.client('autoscaling')
         SSM = boto3.client('ssm')
 
-        logging.basicConfig(level=logging.INFO)
+        LOGGER = logging.getLogger()
+        LOGGER.setLevel(logging.INFO)
 
         def _get_ssm(ssm_path):
             ssm_path = ssm_path.replace('ssm:/', '')
-            logging.info(f'SSM get_parameter {ssm_path}')
+            LOGGER.info(f'SSM get_parameter {ssm_path}')
             response = SSM.get_parameter(Name=ssm_path, WithDecryption=True)
             return response['Parameter']['Value']
 
@@ -53,15 +54,20 @@ data "archive_file" "gaia" {
             api_key = _get_ssm(os.environ['SSM_API_KEY'])
 
             assert 'headers' in event, 'event does not have headers'
-            assert 'Authorization' in event['headers'], 'headers does not have Authorization'
-            assert event['headers']['Authorization'] == f'Bearer {api_key}', 'Authorization does not match api key'
+
+            headers = {
+                key.lower(): value
+                for key, value in event['headers'].items()
+            }
+            assert 'authorization' in headers, 'headers does not have Authorization'
+            assert headers['authorization'] == f'Bearer {api_key}', 'Authorization does not match api key'
 
         def _unauthorized():
             response = {
                 "statusCode": 401,
                 "body": "401 Unauthorized"
             }
-            logging.info(response)
+            LOGGER.info(response)
             return response
 
         def _apigw_response(data: dict):
@@ -71,18 +77,17 @@ data "archive_file" "gaia" {
                 "headers": {"Content-Type": "application/json"},
                 "body": json.dumps(data, default=str)
             }
-            logging.info('response')
-            logging.info(response)
+            LOGGER.info('response', response)
             return response
 
         def get_status(debug=False):
             asg_name = _get_asg_name()
 
-            logging.info(f'ASG describe_auto_scaling_groups {asg_name}')
+            LOGGER.info(f'ASG describe_auto_scaling_groups {asg_name}')
             asg_info = ASG.describe_auto_scaling_groups(
                 AutoScalingGroupNames=[asg_name]
             )
-            logging.info(asg_info)
+            LOGGER.info(asg_info)
 
             n_instances = len(asg_info['AutoScalingGroups'][0]['Instances'])
             n_desired = asg_info['AutoScalingGroups'][0]['DesiredCapacity']
@@ -116,14 +121,14 @@ data "archive_file" "gaia" {
             asg_name = _get_asg_name()
             n = modes[mode]
 
-            logging.info(f'ASG update_auto_scaling_group {asg_name}')
+            LOGGER.info(f'ASG update_auto_scaling_group {asg_name}')
             response = ASG.update_auto_scaling_group(
                 AutoScalingGroupName=asg_name,
                 MinSize=n,
                 MaxSize=n,
                 DesiredCapacity=n
             )
-            logging.info(response)
+            LOGGER.info(response)
 
             return response
 
@@ -131,11 +136,10 @@ data "archive_file" "gaia" {
             try:
                 _auth(event)
             except AssertionError as ex:
-                logging.error(f'Unauthorized: {ex}')
+                LOGGER.error(f'Unauthorized: {ex}')
                 return _unauthorized()
 
-            logging.info('event')
-            logging.info(event)
+            LOGGER.info('event', event)
 
             handlers = {
                 "GET /realms/info": lambda: get_status(),
@@ -145,7 +149,7 @@ data "archive_file" "gaia" {
             }
 
             op = f'{event["httpMethod"]} {event["path"]}'
-            logging.info('Handling {op}')
+            LOGGER.info('Handling {op}')
 
             response = handlers[op]()
 
