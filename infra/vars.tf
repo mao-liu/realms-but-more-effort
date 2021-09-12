@@ -18,9 +18,13 @@ locals {
         "t4g.medium": 0.013,    # on demand 0.0424
         "t4g.large":  0.026,    # on demand 0.0848
         "t4g.xlarge": 0.052,    # on demand 0.1696
+        "m5a.large":  0.037,    # on demand 0.108
+        "m5.large":   0.037,    # on demand 0.120
+        "m6g.medium": 0.020,    # on demand 0.048
+        "m6g.large":  0.039,    # on demand 0.096
     }
 
-    instance_type = "t3a.medium"
+    instance_type = "m6g.medium"
 
     r53_domain    = "aws.ab-initio.me"
     realms_api_domain_name = "api.realms.${local.r53_domain}"

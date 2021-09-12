@@ -78,7 +78,7 @@ save:
 	watch -g 'grep -m 1 "Saved the game"' screenlog.0 && $(MAKE) _upload_world
 
 _mcserver:
-	java -Xmx1024M -Xms1024M -jar server.jar nogui
+	java -Xmx2048M -Xms2048M -jar server.jar nogui
 	$(MAKE) _upload_world
 	aws autoscaling update-auto-scaling-group \
 		--auto-scaling-group-name ${ASG_NAME} \
