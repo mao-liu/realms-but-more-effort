@@ -28,7 +28,7 @@ ifndef ENV
 	$(error ENV is undefined)
 endif
 
-auth:		## ENV=<env> # Get an MFA session with AWS
+auth:		## # Get an MFA session with AWS
 	@conda activate ${CONDA_ENV}
 	bash scripts/aws_credential_auth.sh
 

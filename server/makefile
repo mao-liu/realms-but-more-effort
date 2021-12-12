@@ -4,7 +4,9 @@ SHELL=/bin/bash
 .PHONY: all $(MAKECMDGOALS)
 
 # 1.17.1
-SERVER_URL=https://launcher.mojang.com/v1/objects/a16d67e5807f57fc4e550299cf20226194497dc2/server.jar
+# SERVER_URL=https://launcher.mojang.com/v1/objects/a16d67e5807f57fc4e550299cf20226194497dc2/server.jar
+# 1.18.1
+SERVER_URL=https://launcher.mojang.com/v1/objects/125e5adf40c659fd3bce3e66e67a16bb49ecc1b9/server.jar
 AWS_REGION=ap-southeast-2
 
 
@@ -22,7 +24,7 @@ install:
 	aws configure set default.region ${AWS_REGION}
 	$(MAKE) _register_dns
 	$(MAKE) _install_java
-#	$(MAKE) _install_minecraft
+	$(MAKE) _install_minecraft
 
 _install_java:
 	sudo rpm --import https://yum.corretto.aws/corretto.key
